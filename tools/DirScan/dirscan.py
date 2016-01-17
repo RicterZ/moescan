@@ -83,6 +83,7 @@ class DirScan(object):
                '/' + hostuser + '.rar', '/' + hostuser + '.tar.gz', '/' + hostuser + '.tar', '/' + hostuser + '123.zip',
                '/' + hostuser + '123.tar.gz', '/' + hostuser + hostuser + '.zip', '/' + hostuser + hostuser + '.tar.gz',
                '/' + hostuser + hostuser + '.tar', '/' + hostuser + '.bak']
+        self.queue.put(bak)
         with open('dir.txt') as f:
             for line in f:
                 mulu = line.replace('$ext$', ext).strip()

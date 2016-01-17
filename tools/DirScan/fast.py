@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+import os
 import requests
 import optparse
 import sys
@@ -8,7 +9,7 @@ import time
 import Queue
 import re
 import urlparse
-from progressbar import ProgressBar
+from lib.logger import logger
 
 __author__ = 'croxy'
 
@@ -23,7 +24,7 @@ header = {
 
 
 class DirScan(object):
-    def __init__(self, target, threads_num, ext):
+    def __init__(self, target, threads_num, ext, status_code=None):
         self.target = target.strip()
         self.threads_num = threads_num
         self.ext = ext
@@ -33,6 +34,11 @@ class DirScan(object):
         self.errorpage = (r'防火墙|出错啦|信息提示|参数错误|no exists|User home page for|可疑输入拦截|D盾|安全狗|无法加载模块|'
                           r'[nN]ot\s[fF]ound|不存在|未找到|Error|Welcome to nginx!|404|')
         self.regex = re.compile(self.errorpage)
+
+        if isinstance(status_code, (list, tuple, set)) or status_code is None:
+            self.status_code = status_code if status_code else [200, 301, 302, 403, 500]
+        else:
+            raise TypeError('status_code')
 
     def __load_dir_dict(self):
         self.queue = Queue.Queue()
@@ -47,8 +53,10 @@ class DirScan(object):
                '/' + hostuser + hostuser + '.zip', '/' + hostuser + hostuser + '.tar.gz',
                '/' + hostuser + hostuser + '.tar', '/' + hostuser + '.bak']
 
-        self.queue.put(bak)
-        with open('dir.txt') as f:
+        for i in bak:
+            self.queue.put(i)
+
+        with open('{}/dir.txt'.format(os.path.dirname(__file__))) as f:
             for line in f:
                 mulu = line.replace('$ext$', ext).strip()
                 if mulu:
@@ -64,33 +72,17 @@ class DirScan(object):
                 domain = self.target + sub
                 r = requests.head(domain, headers=header, timeout=5, stream=True)
                 code = r.status_code
-                if code == 200:
-                    print "[*] %s =======> 200 \n" % domain,
-                elif code == 403:
-                    pass
+                if code in self.status_code:
+                    logger.info('status code {} -> {}'.format(code, domain))
 
             except Exception, e:
-                print self.target
-                print e
+                pass
 
         self.thread_count -= 1
-
-    def progress(self):
-        """show progress"""
-        dir_count = self.queue.unfinished_tasks
-        bar = ProgressBar().start()
-        while self.queue.qsize() != 0:
-            bar.update(int(((dir_count - self.queue.qsize()) / float(dir_count)) * 100))
-            time.sleep(1)
-        bar.finish()
-        exit()
 
     def run(self):
         self.start_time = time.time()
         t_sequ = []
-        t_pro = threading.Thread(target=self.progress, name="progress")
-        t_pro.setDaemon(True)
-        t_pro.start()
 
         for i in range(self.threads_num):
             t = threading.Thread(target=self._scan, name=str(i))
