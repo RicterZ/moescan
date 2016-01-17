@@ -22,3 +22,4 @@ class Exploit(exploit.BaseExploit):
         arg = self.extra_arg.get('arg') if not self.extra_arg.get('arg') is None else '-sV -Pn'
         result = n.scan(hosts=self.target, ports=self.port, arguments=arg)
         print(result)
+        # TODO: qwq

@@ -13,7 +13,7 @@ import os
 from lib.consle_width import getTerminalSize
 
 
-class DNSBrute:
+class DNSBrute(object):
     def __init__(self, target, names_file, ignore_intranet, threads_num, output):
         self.target = target.strip()
         self.names_file = names_file
@@ -21,13 +21,13 @@ class DNSBrute:
         self.thread_count = self.threads_num = threads_num
         self.scan_count = self.found_count = 0
         self.lock = threading.Lock()
-        self.console_width = getTerminalSize()[0] - 2    # Cal terminal width when starts up
+        self.console_width = getTerminalSize()[0] - 2  # Cal terminal width when starts up
         self.resolvers = [dns.resolver.Resolver() for _ in range(threads_num)]
         self._load_dns_servers()
         self._load_sub_names()
         self._load_next_sub()
         outfile = target + '.txt' if not output else output
-        self.outfile = open(outfile, 'w')   # won't close manually
+        self.outfile = open(outfile, 'w')  # won't close manually
         self.ip_dict = {}
         self.STOP_ME = False
 
@@ -67,7 +67,7 @@ class DNSBrute:
         self.lock.acquire()
         msg = '%s found | %s remaining | %s scanned in %.2f seconds' % (
             self.found_count, self.queue.qsize(), self.scan_count, time.time() - self.start_time)
-        sys.stdout.write('\r' + ' ' * (self.console_width -len(msg)) + msg)
+        sys.stdout.write('\r' + ' ' * (self.console_width - len(msg)) + msg)
         sys.stdout.flush()
         self.lock.release()
 
@@ -85,10 +85,10 @@ class DNSBrute:
         return False
 
     def _scan(self):
-        thread_id = int( threading.currentThread().getName() )
+        thread_id = int(threading.currentThread().getName())
         self.resolvers[thread_id].nameservers.insert(0, self.dns_servers[thread_id % self.dns_count])
         self.resolvers[thread_id].lifetime = self.resolvers[thread_id].timeout = 10.0
-        while self.queue.qsize() > 0 and not self.STOP_ME and self.found_count < 4000:    # limit found count to 4000
+        while self.queue.qsize() > 0 and not self.STOP_ME and self.found_count < 4000:  # limit found count to 4000
             sub = self.queue.get(timeout=1.0)
             for _ in range(6):
                 try:
@@ -102,7 +102,7 @@ class DNSBrute:
                                 self.ip_dict[answer.address] = 1
                             else:
                                 self.ip_dict[answer.address] += 1
-                                if self.ip_dict[answer.address] > 2:    # a wildcard DNS record
+                                if self.ip_dict[answer.address] > 2:  # a wildcard DNS record
                                     is_wildcard_record = True
                             self.lock.release()
                         if is_wildcard_record:
@@ -114,7 +114,7 @@ class DNSBrute:
                             self.lock.acquire()
                             self.found_count += 1
                             msg = cur_sub_domain.ljust(30) + ips
-                            sys.stdout.write('\r' + msg + ' ' * (self.console_width- len(msg)) + '\n\r')
+                            sys.stdout.write('\r' + msg + ' ' * (self.console_width - len(msg)) + '\n\r')
                             sys.stdout.flush()
                             self.outfile.write(cur_sub_domain.ljust(30) + '\t' + ips + '\n')
                             self.lock.release()
@@ -141,23 +141,24 @@ class DNSBrute:
         while self.thread_count > 1:
             try:
                 time.sleep(1.0)
-            except KeyboardInterrupt,e:
+            except KeyboardInterrupt, e:
                 msg = '[WARNING] User aborted, wait all slave threads to exit...'
-                sys.stdout.write('\r' + msg + ' ' * (self.console_width- len(msg)) + '\n\r')
+                sys.stdout.write('\r' + msg + ' ' * (self.console_width - len(msg)) + '\n\r')
                 sys.stdout.flush()
                 self.STOP_ME = True
+
 
 if __name__ == '__main__':
     parser = optparse.OptionParser('usage: %prog [options] target.com')
     parser.add_option('-t', '--threads', dest='threads_num',
-              default=60, type='int',
-              help='Number of threads. default = 30')
+                      default=60, type='int',
+                      help='Number of threads. default = 30')
     parser.add_option('-f', '--file', dest='names_file', default='dict/subnames.txt',
-              type='string', help='Dict file used to brute sub names')
+                      type='string', help='Dict file used to brute sub names')
     parser.add_option('-i', '--ignore-intranet', dest='i', default=False, action='store_true',
-              help='Ignore domains pointed to private IPs.')
+                      help='Ignore domains pointed to private IPs.')
     parser.add_option('-o', '--output', dest='output', default=None,
-              type='string', help='Output file name. default is {target}.txt')
+                      type='string', help='Output file name. default is {target}.txt')
 
     (options, args) = parser.parse_args()
     if len(args) < 1:

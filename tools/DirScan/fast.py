@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-
 import requests
 import optparse
 import sys
@@ -13,7 +12,6 @@ from progressbar import ProgressBar
 
 __author__ = 'croxy'
 
-
 header = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     'Accept-Encoding': 'gzip, deflate, compress',
@@ -24,7 +22,7 @@ header = {
 }
 
 
-class DirScan:
+class DirScan(object):
     def __init__(self, target, threads_num, ext):
         self.target = target.strip()
         self.threads_num = threads_num
@@ -116,7 +114,7 @@ def patch_url(url):
     return url
 
 
-if __name__ == '__main__':
+def parse_args():
     parser = optparse.OptionParser('usage: %prog [options] http://www.c-chicken.cc')
     parser.add_option('-t', '--threads', dest='threads_num',
                       default=10, type='int',
@@ -124,12 +122,14 @@ if __name__ == '__main__':
     parser.add_option('-e', '--ext', dest='ext', default='php',
                       type='string', help='You want to Scan WebScript. default is php')
 
-    (options, args) = parser.parse_args()
-
     if len(args) < 1:
         parser.print_help()
         sys.exit(0)
 
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    (options, args) = parse_args()
     url = patch_url(args[0])
     d = DirScan(target=url, threads_num=options.threads_num, ext=options.ext)
     d.run()
