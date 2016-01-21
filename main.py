@@ -13,8 +13,8 @@ def main():
     # sub-domains brute, ports(1-65535) scan, dir scan, C class IP scan (including previous scans)
 
     # ep mode:
-    # sub-domains brute, ports(21, 22, 53, 80, 81, 82, 88, 873, 2049, 3389, 5900, 8080, 8081, 8888) scan, dir scan, C
-    # class IP scan(including ports scan)
+    # sub-domains brute, ports(21, 22, 53, 80, 81, 82, 88, 873, 2049, 3389, 5900, 8080, 8081, 8888, 7001, 9200
+    # ) scan, dir scan, C class IP scan(including ports scan)
 
     # single mode
     # ports scan (1-65535), dir scan
