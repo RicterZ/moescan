@@ -1,7 +1,7 @@
 # coding=utf-8
 
 '''
-Scan targets' ports.
+Scan targets' ports using nmap.
 '''
 import nmap
 from lib import exploit
