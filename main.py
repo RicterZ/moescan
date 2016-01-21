@@ -4,7 +4,7 @@ from lib.scanner import Scanner
 
 
 def main():
-    target = 'cms.mihoyo.com'
+    target = 'www.ricter.me'
     mode = 'single'
     # moe, ep(enterprise), single
 
